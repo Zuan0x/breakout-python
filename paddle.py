@@ -19,5 +19,5 @@ class Paddle:
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height))
 
-    def reset_position(self):
+    def reset_position(self, width):
         self.x = (width - self.width) // 2
