@@ -4,6 +4,8 @@ from ball import Ball
 from paddle import Paddle
 from brick import Brick
 from start_button import StartButton
+from success_screen import SuccessScreen
+
 
 # Initialize Pygame
 pygame.init()
@@ -38,10 +40,14 @@ for i in range(5):
 # Set up the StartButton
 start_button = StartButton(width // 2 - 50, height // 2 - 25, 100, 50, (50, 150, 50), "Start", (255, 255, 255), 30)
 
+# Set up the SuccessScreen
+success_screen = SuccessScreen(width, height)
+
 # Game loop
 running = True
 clock = pygame.time.Clock()
 game_started = False
+game_over = False
 
 while running:
     for event in pygame.event.get():
@@ -54,6 +60,14 @@ while running:
                 ball.dx = ball.speed
                 ball.dy = -ball.speed
                 paddle.reset_position(width)
+        elif event.type == pygame.MOUSEBUTTONDOWN and game_over:
+            mouse_pos = pygame.mouse.get_pos()
+            if success_screen.is_restart_clicked(mouse_pos):
+                game_over = False
+                game_started = False
+                bricks = [Brick(j * brick_width + 20, i * brick_height + 50, brick_width, brick_height, brick_color) for i in range(5) for j in range(8)]
+                ball.x = width // 2
+                ball.y = height // 2
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] and paddle.x > 0:
@@ -88,16 +102,25 @@ while running:
             brick.is_visible = False
             ball.dy *= -1
 
+    # Check if all bricks are broken
+    if all(not brick.is_visible for brick in bricks):
+            game_over = True
+
     # Draw everything
     screen.fill(bg_color)
     
     if not game_started:
         start_button.draw(screen)
 
-    ball.draw(screen)
-    paddle.draw(screen)
-    for brick in bricks:
-        brick.draw(screen)
+    if not game_started and not game_over:
+        start_button.draw(screen)
+    elif game_over:
+        success_screen.draw(screen)
+    else:
+        ball.draw(screen)
+        paddle.draw(screen)
+        for brick in bricks:
+            brick.draw(screen)
 
     # Update the display
     pygame.display.flip()
